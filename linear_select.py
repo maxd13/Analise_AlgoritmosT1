@@ -39,14 +39,26 @@ def median_of_medians(ls, k):
         elif x > group_mom: right.append(x)
           
 
-    n = len(left)
-    if n == k - 1 : return group_mom
-    if n > k - 1  : return median_of_medians(left, k)
-    if n < k - 1  : return median_of_medians(right, k - n - 1)
+    left_len = len(left)
+    right_len = len(right)
+    middle_len = len(ls) - right_len - left_len
+    
+    if left_len <= (k - 1) < (left_len + middle_len) : return group_mom
+    if k - 1 < left_len   : return median_of_medians(left, k)
+    if k-1 >= (left_len + middle_len)  : return median_of_medians(right, k - left_len - middle_len)
 
 def main():
-    ls = range(1, 101) # median 50
-    print(median_of_medians(ls, 50))
+     # ls = range(1, 101) # median 50
+    
+    # test case for repeated numbers
+    test_cases = [(9, 9), (10, 10), (11, 11), (12, 11), (13, 11), (14, 11), (15, 15)]
+    ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 11, 11, 15, 16, 17, 18, 19, 20, 21]
+    for case in test_cases:
+        result = median_of_medians(ls, case[0])
+        print("Testing case answer: {}, MoM: {}...".format(case[0], median_of_medians(ls, case[1])), end=' ')
+        assert case[1] == result
+        print('Ok.')
+
 
 if __name__ == '__main__':
     main()
