@@ -6,6 +6,14 @@ import time
 def avg(ls):
     return sum(ls)/len(ls)
 
+def bubble_sort(arr):
+    n = len(arr) 
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1] :
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr
+
 
 def sort_selection(ls, k):
     assert type(k) is int
@@ -18,7 +26,7 @@ def sort_selection(ls, k):
                         Size of list was = {n}.
                         """
                         )
-    return sorted(ls)[k-1]
+    return bubble_sort(ls)[k-1]
 
 
 def main():
