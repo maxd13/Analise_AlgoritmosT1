@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-from itertools import permutations#, repeat
-from math import factorial as fat#, floor
-#import numpy as np
+from itertools import permutations
+from math import factorial as fat
 
 def swap(i, j, list):
     l = list.copy()
@@ -67,27 +66,17 @@ def hash(state):
         sum += (state[i] - n)*fat(8 - i)
     return sum
 
-#creates the whole graph as a dictionary
+# creates the whole graph as a hashtable
 # number of nodes: 9! = 362880
 # 2 * number of edges = 2 * 4 * 8! + 3 * 4 * 8! + 4 * 1 * 8! = 4 * 8! * (2 + 3 + 1) = 24 * 8! 
 # number of edges = 12 * 8! = 483840
 # the graph is only about 7.34864...×10^-4 percent complete,
 # therefore it is very sparse.
-# switching the graph for a list, initialized as [None] * 362880, gives very similar time results.
-# average running time is about 12 seconds.
-# def make_graph():
-#     graph = {}
-#     for p in permutations(range(9)):
-#         p = list(p)
-#         # this line caused running times to jump to an average of 32 seconds.
-#         #neighbors = [hash(x) for x in neighborhood(p)]
-#         graph[hash(p)] = (p, neighborhood(p))
-#     return graph
-
 # here we are able to get running time averaging 3.6 seconds.
 # but we have to prove that the permutation function generates the
-# array in lexicographic order.
-# this function used to be called fast_make_graph
+# array in lexicographic order, so that our hash works.
+# this is done in the test script
+
 def make_graph():
     graph = []
     for p in permutations(range(9)):
@@ -95,59 +84,66 @@ def make_graph():
         graph.append((p, neighborhood(p)))
     return graph
 
-# here are ways to test our claim.
-# the tests pass.
-# the first test runs on a "no news is good news" basis.
-# def test1():
-#     g = make_graph()
-#     g2 = fast_make_graph()
-#     for i in range(362880):
-#         if g[i] != g2[i]:
-#             print(f"diff at pos {i}: {g[i]} != {g2[i]}")
-# def test2():
-#     g = make_graph()
-#     g2 = fast_make_graph()
-#     bools = (g[i] == g2[i] for i in range(362880))
-#     if all(bools):
-#         print("PASSES!")
-#     else:
-#         print("FAILS!")
-# because all tests pass we use the latter function rather than the former.
-# by means of these tests we were able to make our original code about 9 times faster,
-# from an average of 32 seconds, to an average of 3.6 seconds. These averages also have
-# very low standard deviations (about a second between runs).
+def BFS(G, s, visited):
+    queue = [s]
+    # distance from s, parent.
+    visited[hash(s)] = (0, None)
+    while queue:
+        u = queue.pop(0)
+        hu = hash(u)
+        for v in G[hu][1]:
+            hv = hash(v)
+            if not visited[hv]:
+                visited[hv] = (visited[hu][0] + 1, hu)
+                queue.append(v)
 
-#creates the graph as a numpy.array
-# this actually turned out to be slower so we will comment it out.
-# def np_make_graph():
-#     # array full of -1, with 13 colums.
-#     # first 9 colums give the state,
-#     # the last 4 give its neighbors.
-#     graph = np.full((362880, 13), -1, dtype=np.int32)
-#     for p in permutations(range(9)):
-#         p = list(p)
-#         neighbors = [hash(x) for x in neighborhood(p)]
-#         aux = p + neighbors
-#         if len(aux) < 13:
-#             aux = aux + list(repeat(0, 13 - len(aux)))
-#         graph[hash(p)] = np.array(aux)
-#     return graph
+def count_components(G):
+    count = 0
+    visited = [None] * 362880
+    for i in range(362880):
+        if not visited[i]:
+            BFS(G, G[i][0], visited)
+            count += 1
+    return count
 
-# # cache by using depth first search
-# def make_cache(initial_node, recursion_depth, cache):
-#     ini = hash_state(initial_node)
-#     if ini in cache:
-#         return
-#     cache[ini] = neighborhood(initial_node)
-#     if recursion_depth is 0:
-#         return
-#     for n in cache[ini]:
-#         if hash_state(n) in cache:
-#             continue
-#         make_cache(n, recursion_depth - 1, cache)
+def hardest_problems(G):
+    visited = [None] * 362880
+    goal = list(range(1,9)) + [0]
+    BFS(G, goal, visited)
+    problems = []
+    max = 0
+    for i in range(362880):
+        if not visited[i]: 
+            continue
+        elif visited[i][0] > max:
+            max = visited[i][0]
+            problems = [i]
+        elif visited[i][0] == max:
+            problems.append(i)
 
+    solutions = []
+    for p in problems:
+        parent = visited[p][1]
+        current_solution = [p]
+        while parent:
+            current_solution.append(parent)
+            parent = visited[parent][1]
+        solutions.append(current_solution)
+    return (max, solutions)
+
+# Whole code takes an average of 42 seconds to run.
 def main():
-    pass
+    g = make_graph()
+    print(f"number of components: {count_components(g)}")
+    d, solutions = hardest_problems(g)
+    print(f"steps needed to solve hardest problems: {d}")
+    print("hardest problems and solutions:\n")
+    for s in solutions:
+        print(f"problem: {g[s[0]][0]}")
+        print("solution:")
+        solution = [g[x][0] for x in s[1:]]
+        for i in range(len(solution)):
+            print(f"    step {i+1}: {solution[i]}")
 
 if __name__ == '__main__':
     main()
