@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from itertools import permutations
-from game import make_graph, neighborhood
+from game import make_graph, neighborhood, hash
 # switching the graph for a list, initialized as [None] * 362880, gives very similar time results.
 # average running time is about 12 seconds.
 # this function used to be called fast_make_graph
