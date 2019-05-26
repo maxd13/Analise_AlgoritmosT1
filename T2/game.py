@@ -131,9 +131,18 @@ def hardest_problems(G):
         solutions.append(current_solution)
     return (max, solutions)
 
+
+def printState(state):
+    print(state[0:3])
+    print(state[3:6])
+    print(state[6:9])
+
+
 # Whole code takes an average of 42 seconds to run.
 def main():
     g = make_graph()
+    print(f"number of nodes: {len(g)}")
+    print(f"number of edges: {sum([len(x[1]) for x in g])/2}")
     print(f"number of components: {count_components(g)}")
     d, solutions = hardest_problems(g)
     print(f"steps needed to solve hardest problems: {d}")
@@ -143,7 +152,9 @@ def main():
         print("solution:")
         solution = [g[x][0] for x in s[1:]]
         for i in range(len(solution)):
-            print(f"    step {i+1}: {solution[i]}")
+            # print(f"    step {i+1}: {solution[i]}")
+            print(f"    step {i+1}")
+            printState(solution[i])
 
 if __name__ == '__main__':
     main()
