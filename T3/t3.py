@@ -1,5 +1,9 @@
+
+#!/usr/bin/env python 
+
 from os import listdir, curdir
 from os.path import isfile, join
+
 
 class ProblemInstance():
     def __init__(self, n_items, backpack_size, v, w):
@@ -20,7 +24,7 @@ class ProblemInstance():
                 discounted_weight = 0 if discounted_weight < 0 else discounted_weight
                 M[n_item][size] = max(M[n_item-1][size], M[n_item][discounted_weight] + self.v[n_item-1])
         return M[-1][-1]
-    
+
 
 def read_problem(filename):
     with open(join(curdir, 'problem_instances', filename)) as f:
