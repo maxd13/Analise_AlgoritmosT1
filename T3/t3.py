@@ -3,6 +3,10 @@
 
 from os import listdir, curdir
 from os.path import isfile, join
+from random import randint
+
+import copy
+
 
 
 class ProblemInstance():
@@ -16,6 +20,26 @@ class ProblemInstance():
         self.w = w
         # print('creating problem with variables: {}, {}, \n{}\n{}'.format(n_items, backpack_size, v, w))
     
+    @staticmethod
+    def get_max(sequence):
+        """
+        Function that return the max value and
+        its index in a sequence
+        
+        :param sequence: iterable of integers in which to find max
+        :type sequence: iterable
+        :return: a tuple containing the index and value of max element
+        :rtype: tuple
+        """
+        maximum = sequence[0]
+        max_idx = 0
+        for idx, e in enumerate(sequence):
+            if e > maximum:
+                maximum = e
+                max_idx = idx
+        return (max_idx, maximum)
+
+
     def solve(self):
         """
         Solves the knapsack problem using DP (Dinamic Programming)
@@ -27,8 +51,11 @@ class ProblemInstance():
         :return: (best solution value, quantity of each item)
         :rtype: tuple
         """
-        # start a matrix M [n_item][backpack_size]
+        # start a matrix M [n_item][backpack_size] to hold solution values
         M = [ [0 for x in range(self.backpack_size + 1) ] for y in range(self.n_items + 1)]
+        # start matrix L to hold the items quantities of each solution 
+        L = [ [[] for x in range(self.backpack_size + 1) ] for y in range(self.n_items + 1)]
+
         for size in range(1, self.backpack_size+1):
             for n_item in range(1, self.n_items+1):
                 # here the magic happens
@@ -44,8 +71,18 @@ class ProblemInstance():
                         # does not fit in the backpack
                         continue
                     with_item.append(M[n_item-1][discounted_weight] + i*self.v[n_item-1])
-                M[n_item][size] = max([0, M[n_item-1][size], *with_item])
-        return M[-1][-1]
+                max_idx, max_value = self.get_max([M[n_item-1][size], *with_item])
+                
+                # if max_idx:
+                L[n_item][size] = copy.deepcopy(L[n_item-1][size - max_idx * self.w[n_item-1]])
+                L[n_item][size].append(max_idx)
+                # else:
+                    
+                
+                # L[size].append(max_idx)
+                M[n_item][size] = max_value
+
+        return M[-1][-1], L[-1][-1]
 
 
 def read_problem(filename):
@@ -85,11 +122,16 @@ def main():
         print("Error: no instance files found.")
     print("{} instance files found.".format(len(instance_files)))
     for idx, f in enumerate(instance_files):
-        print("Reading problem {}...".format(f[-1]))
         problem = read_problem(f)
-        print("Solving problem {}...".format(f[-1]))
-        result = problem.solve()
-        print("result: {}".format(result))
+        result, solution = problem.solve()
+
+        print("\nMelhor valor obtido na instancia {}: {}".format(idx+1, result))
+        color_number = randint(91, 96)
+        for i, item in enumerate(solution):
+            color = ''
+            if item:
+                color = '\033[{}m'.format(str(color_number))
+            print("\t{}Foram usados {} do item numero {}{}".format(color, item, i+1, '\033[0m'))
 
 
 if __name__ == '__main__':
